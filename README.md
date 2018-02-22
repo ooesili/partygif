@@ -1,7 +1,7 @@
 partygif
 ========
 
-A simple command line utility to generate color-rotating animated gif emoji's à la [Party Parrot][party-parrot].
+A simple command line utility to generate color-rotating animated GIF emojis à la [Party Parrot][party-parrot].
 
 Take your otherwise boring animated GIF emoji...
 
@@ -50,12 +50,12 @@ The color manipulation is done by mapping each RGB value from the color palette 
 Future plans
 ------------
 
-- [ ] static (non-animated) input gifs
-- [ ] png input
-- [ ] jpeg input
-- [ ] bringing the party to grayscale images
+- [ ] static (non-animated) input GIFs
+- [ ] PNG input
+- [ ] JPEG input
+- [ ] bringing the party to gray scale images
 - [ ] concurrent processing
-- [ ] prebuilt binaries with gox
+- [ ] pre-built binaries with gox
 
 [party-parrot]: http://cultofthepartyparrot.com
 [go-colorful]: https://github.com/lucasb-eyer/go-colorful
