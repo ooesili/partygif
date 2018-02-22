@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"image"
 	"image/color"
 	"image/gif"
 	"io"
@@ -17,12 +18,16 @@ var config struct {
 	inFile     string
 	outputFile string
 	cycles     int
+	repeats    int
+	frameRate  int
 }
 
 func init() {
 	flag.StringVar(&config.inFile, "in", "", "input GIF file")
 	flag.StringVar(&config.outputFile, "out", "", "output GIF file")
-	flag.IntVar(&config.cycles, "cycles", 1, "number of color cycles during the gif")
+	flag.IntVar(&config.cycles, "cycles", 1, "number of color cycles during the GIF")
+	flag.IntVar(&config.repeats, "repeats", 0, "number of times to repeat GIF before color shifting")
+	flag.IntVar(&config.frameRate, "framerate", 10, "frame rate in 100ths of seconds for static GIFs")
 }
 
 func main() {
@@ -55,24 +60,63 @@ func mainErr() error {
 }
 
 func partyGIF(inputFile io.Reader, outputFile io.Writer) error {
-	image, err := gif.DecodeAll(inputFile)
+	img, err := gif.DecodeAll(inputFile)
 	if err != nil {
 		return fmt.Errorf("decoding input file: %s", err)
 	}
 
-	processGIF(image)
+	addRepeats(img)
+	colorShift(img)
 
-	if err := gif.EncodeAll(outputFile, image); err != nil {
+	if err := gif.EncodeAll(outputFile, img); err != nil {
 		return fmt.Errorf("encoding gif to output file: %s", err)
 	}
 
 	return nil
 }
 
-func processGIF(image *gif.GIF) {
-	hueStep := 360 / float64(len(image.Image)) * float64(config.cycles)
+func addRepeats(img *gif.GIF) {
+	if len(img.Image) == 1 {
+		img.Delay = []int{config.frameRate}
+	}
 
-	for frameIndex, frame := range image.Image {
+	originalLength := len(img.Image)
+
+	for i := 0; i < config.repeats-1; i++ {
+		for j := 0; j < originalLength; j++ {
+			img.Image = append(img.Image, copyFrame(img.Image[j]))
+			img.Delay = append(img.Delay, img.Delay[j])
+			img.Disposal = append(img.Disposal, img.Disposal[j])
+		}
+	}
+
+	// clean restart of original GIF
+	for repeatIndex := 0; repeatIndex < config.repeats; repeatIndex++ {
+		repeatBegin := repeatIndex * originalLength
+		lastFrameInRepeat := repeatBegin + originalLength - 1
+		img.Disposal[lastFrameInRepeat] = gif.DisposalBackground
+	}
+}
+
+func copyFrame(frame *image.Paletted) *image.Paletted {
+	copyPix := make([]uint8, len(frame.Pix))
+	copy(copyPix, frame.Pix)
+
+	copyPalette := make(color.Palette, len(frame.Palette))
+	copy(copyPalette, frame.Palette)
+
+	return &image.Paletted{
+		Pix:     copyPix,
+		Stride:  frame.Stride,
+		Rect:    frame.Rect,
+		Palette: copyPalette,
+	}
+}
+
+func colorShift(img *gif.GIF) {
+	hueStep := 360 / float64(len(img.Image)) * float64(config.cycles)
+
+	for frameIndex, frame := range img.Image {
 		hueShift := hueStep * float64(frameIndex)
 
 		for i := range frame.Palette {
