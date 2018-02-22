@@ -50,6 +50,7 @@ The color manipulation is done by mapping each RGB value from the color palette 
 Future plans
 ------------
 
+- [ ] repeating short GIFs to add smoother color changes
 - [ ] static (non-animated) input GIFs
 - [ ] PNG input
 - [ ] JPEG input
