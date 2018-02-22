@@ -11,6 +11,15 @@ Take your otherwise boring animated GIF emoji...
 
 ![party-gopher-dance](/images/party-gopher-dance.gif)
 
+Installation
+------------
+
+You need [Go][golang] to build and install `partygif`. After [downloading and installing][golang-dl] Go, run the following command and you should be good to go!
+
+```
+go get -u github.com/ooesili/partygif
+```
+
 Usage
 -----
 
@@ -46,7 +55,10 @@ Future plans
 - [ ] jpeg input
 - [ ] bringing the party to grayscale images
 - [ ] concurrent processing
+- [ ] prebuilt binaries with gox
 
 [party-parrot]: http://cultofthepartyparrot.com
 [go-colorful]: https://github.com/lucasb-eyer/go-colorful
 [hcl-space]: https://en.wikipedia.org/wiki/HCL_color_space
+[golang]: https://golang.org/
+[golang-dl]: https://golang.org/dl/
