@@ -58,8 +58,17 @@ Future plans
 - [ ] concurrent processing
 - [ ] pre-built binaries with gox
 
+Thanks
+------
+
+Thanks to Egon Elbre for making the dancing gopher GIF used in this example, which came from [this amazing repo][gophers].
+
+Thanks to Lucas Beyer for creating the awesome [go-colorful][go-colorful] library so that I didn't figure out all the math to hue-shift RGB values.
+
+
 [party-parrot]: http://cultofthepartyparrot.com
 [go-colorful]: https://github.com/lucasb-eyer/go-colorful
 [hcl-space]: https://en.wikipedia.org/wiki/HCL_color_space
 [golang]: https://golang.org/
 [golang-dl]: https://golang.org/dl/
+[gophers]: https://github.com/egonelbre/gophers
