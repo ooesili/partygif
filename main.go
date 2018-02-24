@@ -20,6 +20,7 @@ var config struct {
 	cycles     int
 	repeats    int
 	frameRate  int
+	black      bool
 }
 
 func init() {
@@ -28,6 +29,7 @@ func init() {
 	flag.IntVar(&config.cycles, "cycles", 1, "number of color cycles during the GIF")
 	flag.IntVar(&config.repeats, "repeats", 0, "number of times to repeat GIF before color shifting")
 	flag.IntVar(&config.frameRate, "framerate", 10, "frame rate in 100ths of seconds for static GIFs")
+	flag.BoolVar(&config.black, "black", false, "add color to a black and white image before color shifting")
 }
 
 func main() {
@@ -65,6 +67,9 @@ func partyGIF(inputFile io.Reader, outputFile io.Writer) error {
 		return fmt.Errorf("decoding input file: %s", err)
 	}
 
+	if config.black {
+		colorize(img)
+	}
 	addRepeats(img)
 	colorShift(img)
 
@@ -73,6 +78,16 @@ func partyGIF(inputFile io.Reader, outputFile io.Writer) error {
 	}
 
 	return nil
+}
+
+func colorize(img *gif.GIF) {
+	for _, frame := range img.Image {
+		for i := range frame.Palette {
+			rawColor := newRawColor(frame.Palette[i])
+			rawColor.r = rawColor.a
+			frame.Palette[i] = rawColor
+		}
+	}
 }
 
 func addRepeats(img *gif.GIF) {
@@ -134,21 +149,20 @@ func shiftHue(shift float64, col color.Color) color.Color {
 	hue, chroma, lum := colorful.MakeColor(col).Hcl()
 	hue += shift
 
-	return alphaOverride{
-		color: colorful.Hcl(hue, chroma, lum).Clamped(),
-		alpha: alpha,
-	}
+	color := newRawColor(colorful.Hcl(hue, chroma, lum).Clamped())
+	color.a = alpha
+	return color
 }
 
-type alphaOverride struct {
-	color color.Color
-	alpha uint32
+func newRawColor(color color.Color) rawColor {
+	r, g, b, a := color.RGBA()
+	return rawColor{r: r, g: g, b: b, a: a}
 }
 
-func (c alphaOverride) RGBA() (uint32, uint32, uint32, uint32) {
-	r, g, b, _ := c.color.RGBA()
-	a := c.alpha
-	return r, g, b, a
+type rawColor struct{ r, g, b, a uint32 }
+
+func (c rawColor) RGBA() (uint32, uint32, uint32, uint32) {
+	return c.r, c.g, c.b, c.a
 }
 
 func openInFile() (io.ReadCloser, error) {

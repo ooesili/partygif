@@ -26,6 +26,8 @@ Usage
 ```
 $ partygif -h
 Usage of partygif:
+  -black
+        add color to a black and white image before color shifting
   -cycles int
         number of color cycles during the GIF (default 1)
   -framerate int
@@ -55,14 +57,18 @@ The color manipulation is done by mapping each RGB value from the color palette 
 
 For single-frame (A.K.A. non-animated) or short gifs that don't have enough frames to render a smooth color animation, the `-repeats` flag can be used to repeat the GIF a few times before applying the color shifting. For single-frame the `-framerate` flag can be used to customize the frame rate of the final GIF.
 
-Future plans
+### Grayscale Images
+
+Since hue-shifting only works on images that already have color, a `-black` flag exists which will colorize a black and white image before the hue shifting takes place. It does this by maximizing up the red value on every color in every palette on every frame. This essentially turns every black pixel into a red one, which lets the hue-shifting process do its job.
+
+Road map
 ------------
 
 - [x] repeating short GIFs to add smoother color changes
 - [x] static (non-animated) input GIFs
 - [ ] PNG input
 - [ ] JPEG input
-- [ ] bringing the party to gray scale images
+- [x] bringing the party to gray scale images
 - [ ] concurrent processing
 - [ ] pre-built binaries with gox
 
