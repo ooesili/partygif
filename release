@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+main() {
+  validate
+  clean
+  compile
+  compress
+  release
+}
+
+validate() {
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo 'error: repo has uncomitted changes'
+    exit 1
+  fi
+
+  if [[ "$(git symbolic-ref --short HEAD)" != master ]]; then
+    echo 'error: not on the master branch'
+    exit 1
+  fi
+
+  log 'fetching upstream branches'
+  git fetch
+
+  if [[ "$(git rev-parse master)" != "$(git rev-parse origin/master)" ]]; then
+    echo 'error: not up to date with origin/master'
+    exit 1
+  fi
+
+  if ! git describe --tags --exact-match &> /dev/null; then
+    echo 'error: current commit is not tagged'
+    exit 1
+  fi
+}
+
+clean() {
+  log 'cleaning build directory'
+  rm -rf build
+  mkdir build
+}
+
+compile() {
+  log 'cross compiling'
+  (cd build && gox -gocmd=vgo ..)
+}
+
+compress() {
+  log 'compressing binaries'
+  for file in build/*; do
+    zip "${file%.*}.zip" "$file"
+    rm "$file"
+  done
+}
+
+release() {
+  log 'creating release'
+  local tag
+  tag="$(git describe --tags --exact-match)"
+  ghr -username ooesili -repository partygif "$tag" build
+}
+
+log() {
+  echo "==> $*"
+}
+
+main "$@"
