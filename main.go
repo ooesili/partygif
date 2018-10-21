@@ -141,15 +141,16 @@ func colorShift(img *gif.GIF) {
 }
 
 func shiftHue(shift float64, col color.Color) color.Color {
-	_, _, _, alpha := col.RGBA()
-	if alpha == 0 {
+	rgb, ok := colorful.MakeColor(col)
+	if !ok {
 		return col
 	}
 
-	hue, chroma, lum := colorful.MakeColor(col).Hcl()
+	hue, chroma, lum := rgb.Hcl()
 	hue += shift
 
 	color := newRawColor(colorful.Hcl(hue, chroma, lum).Clamped())
+	_, _, _, alpha := col.RGBA()
 	color.a = alpha
 	return color
 }
